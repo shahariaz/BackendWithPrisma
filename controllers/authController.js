@@ -2,6 +2,7 @@ import prisma from "../DB/db.config.js";
 import vine,{errors} from "@vinejs/vine";
 import { registerSchema,loginSchema } from "../validations/authValidation.js";
 import bcrytjs from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 class AuthController{
     static async register(req,res){
       try {
@@ -41,15 +42,29 @@ class AuthController{
         const body = req.body;
         const validator = vine.compile(loginSchema)
         const payload = validator.validate(body);
+        const email = body.email;
+        //* check if user exists
 
-        const user = await prisma.users.findUnique({where:{email:body.email}})
+        const user = await prisma.users.findUnique({where:{email:email}})
+        
         if(user){
           //* compare the password
+         
           const isMatch = await bcrytjs.compare(body.password,user.password)
           if(isMatch){
+            //* generate a token
+                //* Issue token to the user
+          const payloadData = {
+            id:user.id,
+            name:user.name,
+            email:user.email
+          }
+        
+          const token =  jwt.sign(payloadData,process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
+        
             return res.status(200).json({
               message:"User logged in successfully",
-              data:user
+              access_token:`Bearer ${token}`
             })
           }else{
             return res.status(401).json({
