@@ -8,3 +8,4 @@ CREATE TABLE "Users" (
 
     CONSTRAINT "Users_pkey" PRIMARY KEY ("id")
 );
+  
