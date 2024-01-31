@@ -4,6 +4,12 @@ import { newsSchema } from "../validations/newsValidation.js";
 import { imageValidator,generateRandomNum } from '../utils/helper.js';
 class NewsController {
     static async index(req,res){
+    const news = await prisma.news.findMany({});
+    return res.status(200).json({
+        status:200,
+        message:"News fetched successfully",
+        data:news
+    })
     }
     static async store(req,res){
         try {
