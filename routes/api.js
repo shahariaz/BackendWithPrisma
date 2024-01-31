@@ -9,6 +9,7 @@ router.post("/auth/login",AuthController.login)
 
 //* router for user profile
 router.get("/profile",authMiddleware,ProfileController.index);
+router.put("/profile/:id",authMiddleware,ProfileController.update);
 
 export default router;
 
