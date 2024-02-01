@@ -1,9 +1,10 @@
 import { errors } from '@vinejs/vine';
-import { imageValidator,generateRandomNum } from '../utils/helper.js';
+import { imageValidator,generateRandomNum, uploadImage } from '../utils/helper.js';
 import prisma from '../DB/db.config.js';
 class ProfileController{
     static async index(req,res){
         try {
+          console.log(req.user);
             const user = req.user;
         return res.status(200).json({
             message:"User profile fetched successfully",
@@ -37,14 +38,9 @@ class ProfileController{
                 },
               });
             }
+            // *upload image
       
-            const imgExt = profile?.name.split(".");
-            const imageName = generateRandomNum() + "." + imgExt[1];
-            const uploadPath = process.cwd() + "/public/images/" + imageName;
-      
-            profile.mv(uploadPath, (err) => {
-              if (err) throw err;
-            });
+           const imageName = uploadImage(profile);
       
             await prisma.users.update({
               data: {

@@ -1,14 +1,37 @@
 import vine,{errors} from "@vinejs/vine";
 import prisma from '../DB/db.config.js';
 import { newsSchema } from "../validations/newsValidation.js";
-import { imageValidator,generateRandomNum } from '../utils/helper.js';
+import { imageValidator, uploadImage } from '../utils/helper.js';
+import NewsApiTransform from "../transform/newsApiTransform.js";
 class NewsController {
     static async index(req,res){
-    const news = await prisma.news.findMany({});
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+      if(page <=0){
+        page =1;
+      }
+      if(limit <=0 || limit >100){
+        limit = 10;
+      }
+      const news = await prisma.news.findMany({
+        include:{
+          user:{
+            select:{
+              id:true,
+              name:true,
+              profile:true
+            }
+          }
+        }
+      });
+      const newsTransForm = news?.map((news) =>{
+        return NewsApiTransform.transform(news);
+      })
     return res.status(200).json({
         status:200,
         message:"News fetched successfully",
-        data:news
+        data:newsTransForm
     })
     }
     static async store(req,res){
@@ -28,13 +51,7 @@ class NewsController {
           return res.status(400).json({errors:{image:message}})
         }
         //* image upload custom
-        const imgExt = image?.name.split(".");
-        const imageName = generateRandomNum() + "." + imgExt[1];
-        const uploadPath = process.cwd()+"/public/images"+imageName;
-        image.mv(uploadPath,(err)=>{
-          if(err) throw err;
-        
-        })
+        const imageName = uploadImage(image);
         //* store news in database
         payload.image = imageName;
         payload.user_id = user.id;

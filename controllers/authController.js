@@ -60,7 +60,7 @@ class AuthController{
             email:user.email
           }
         
-          const token =  jwt.sign(payloadData,process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
+          const token =  jwt.sign(payloadData,process.env.JWT_SECRET_KEY,{expiresIn:"1Days"})
         
             return res.status(200).json({
               message:"User logged in successfully",
