@@ -15,6 +15,8 @@ class NewsController {
         limit = 10;
       }
       const news = await prisma.news.findMany({
+        take:limit,
+        skip:offset,
         include:{
           user:{
             select:{
@@ -28,10 +30,19 @@ class NewsController {
       const newsTransForm = news?.map((news) =>{
         return NewsApiTransform.transform(news);
       })
+       const totalNews = await prisma.news.count();
+        const totalPages = Math.ceil(totalNews / limit);
+
     return res.status(200).json({
         status:200,
         message:"News fetched successfully",
-        data:newsTransForm
+        data:newsTransForm,
+        meta:{
+          totalNews:totalNews,
+          currentPage:page,
+          totalPages:totalPages,
+          limit:limit
+        }
     })
     }
     static async store(req,res){
@@ -77,7 +88,32 @@ class NewsController {
         }
     }
     static async update(req,res){}
-    static async show(req,res){}
+    static async show(req,res){
+      const id = req.params.id;
+      const news = await prisma.news.findUnique({
+        where:{
+          id:Number(id)
+        },
+        include:{
+          user:{
+            select:{
+              id:true,
+              name:true,
+              profile:true
+            }
+          }
+        }
+      });
+      if(!news){
+        return res.status(404).json({status:404,message:"News not found"})
+      }
+      const newsTransForm = NewsApiTransform.transform(news);
+      return res.status(200).json({
+        status:200,
+        message:"News fetched successfully",
+        data:newsTransForm
+      })
+    }
     static async destory(req,res){}
 }
 
