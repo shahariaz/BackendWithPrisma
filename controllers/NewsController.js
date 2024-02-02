@@ -87,8 +87,41 @@ class NewsController {
             
         }
     }
-    static async update(req,res){}
+    static async update(req,res){
+       try {
+        const id = req.params.id;
+        const user = req.user;
+        const body = req.body;
+        const news = await prisma.findUnique(
+          {
+            where:{
+              id:Number(id),
+            }
+          }
+        )
+        if(!news){
+          return res.status(404).json({status:404,message:"News not found"})
+        }
+        if(user.id !== news.user.id){
+          return res.status(400).json({
+            message:"unauthorized access to update news"
+          })  
+        }
+        const validator = vine.compile(newsSchema);
+        const payload =await validator.validate(body);
+        const updatedNews = await prisma.news.update({
+          where:{
+            id:Number(id)
+          },
+          data:payload
+        });
+
+       } catch (error) {
+        
+       }
+    }
     static async show(req,res){
+     try {
       const id = req.params.id;
       const news = await prisma.news.findUnique({
         where:{
@@ -113,8 +146,46 @@ class NewsController {
         message:"News fetched successfully",
         data:newsTransForm
       })
+     } catch (error) {
+      console.log(`Error: ${error.message}`);
+      return res.status(500).json({
+        message:'Internal server error'
+      })
+     }
     }
-    static async destory(req,res){}
+    static async destory(req,res){
+      try {
+        const id = req.params.id;
+        const news = await prisma.news.findUnique({
+          where:{
+            id:Number(id)
+          }
+        });
+        if(user.id !== news.user.id){
+          return res.status(400).json({
+            message:"unauthorized access to delete news"
+          })  
+        }
+        if(!news){
+          return res.status(404).json({status:404,message:"News not found"})
+        }
+        await prisma.news.delete({
+          where:{
+            id:Number(id)
+          }
+        });
+        return res.status(200).json({
+          status:200,
+          message:"News deleted successfully",
+        
+        })
+      } catch (error) {
+        console.log(`Error: ${error.message}`);
+        return res.status(500).json({
+          message:'Internal server error'
+        })
+      }
+    }
 }
 
 export default NewsController;
