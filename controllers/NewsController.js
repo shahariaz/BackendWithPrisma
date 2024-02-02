@@ -109,6 +109,17 @@ class NewsController {
         }
         const validator = vine.compile(newsSchema);
         const payload =await validator.validate(body);
+        const image = req?.files?.image;
+        if(image){
+          //*image custom validator
+          const message = imageValidator(image?.size,image?.mimetype);
+          if(message !== null){
+            return res.status(400).json({errors:{image:message}})
+          }
+          //* image upload custom
+          const imageName = uploadImage(image);
+          payload.image = imageName;
+        }
         const updatedNews = await prisma.news.update({
           where:{
             id:Number(id)
@@ -117,6 +128,13 @@ class NewsController {
         });
 
        } catch (error) {
+        console.log(`Error: ${error.message}`);
+        if(error instanceof errors.E_VALIDATION_ERROR){
+          return res.status(422).json({errors:error.messages})
+        }
+        else{
+          return res.status(500).json({error:error.message})
+        }
         
        }
     }

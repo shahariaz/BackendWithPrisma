@@ -1,5 +1,6 @@
 import { supportedMimes } from "../config/fileSystem.js";
 import {v4 as uuidv4} from 'uuid'
+import fs from 'fs';
 export const imageValidator =(size,mime)=>{
 if(byteToMb(size)>2){
     return res.status(400).json({
@@ -32,3 +33,7 @@ export const uploadImage = (image) => {
   
     return imageName;
   };
+export const  removeImage = (imageName)=>{
+    const path = process.cwd()+"public/images/"+imageName;
+    if(fs.existsSync(path)) fs.unlinkSync(path);
+};
