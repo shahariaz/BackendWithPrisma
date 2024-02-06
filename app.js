@@ -22,6 +22,5 @@ app.get('/', (req, res) =>{
 
 //* Import routes
 import ApiRoutes from "./routes/api.js";
-import rateLimit from "express-rate-limit";
 app.use('/api', ApiRoutes);
 app.listen(port, () => console.log(`server listening on ${port}`));

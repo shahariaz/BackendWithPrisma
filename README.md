@@ -1,0 +1,1 @@
+#It's an NodeJs App. Where we used ExpressJs,Prisma,PgSQL For building an News portal web backend.
